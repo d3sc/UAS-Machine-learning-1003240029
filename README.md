@@ -360,6 +360,287 @@ python -m src.evaluate
 
 ---
 
+# Menjalankan REST API
+
+Project ini menyediakan REST API menggunakan **FastAPI** untuk melakukan prediksi harga mobil bekas menggunakan model Machine Learning yang telah dilatih.
+
+## Membuat Virtual Environment API
+
+### Windows
+
+```powershell
+python -m venv .venv-api
+.\.venv-api\Scripts\Activate.ps1
+```
+
+### macOS / Linux
+
+```bash
+python -m venv .venv-api
+source .venv-api/bin/activate
+```
+
+Install dependency API.
+
+```bash
+pip install -r requirements-api.txt
+```
+
+Jalankan server FastAPI.
+
+```bash
+uvicorn app.main:app --reload
+```
+
+Apabila berhasil dijalankan, server akan aktif pada alamat berikut.
+
+```
+http://127.0.0.1:8000
+```
+
+---
+
+# Dokumentasi API
+
+FastAPI secara otomatis menyediakan dokumentasi interaktif.
+
+| Dokumentasi | URL |
+|-------------|-----|
+| Swagger UI | http://127.0.0.1:8000/docs |
+| ReDoc | http://127.0.0.1:8000/redoc |
+
+Melalui halaman tersebut pengguna dapat mencoba endpoint secara langsung tanpa menggunakan Postman.
+
+---
+
+# Daftar Endpoint
+
+## GET /
+
+Menampilkan informasi singkat mengenai layanan API.
+
+### Request
+
+```http
+GET /
+```
+
+### Response
+
+```json
+{
+  "project": "Estimasi Harga Kendaraan Bekas",
+  "dataset": "Cars Dataset (Audi, BMW, Ford, Hyundai, Skoda, VW)",
+  "endpoint": "POST /predict-harga",
+  "documentation": "/docs"
+}
+```
+
+---
+
+## GET /health
+
+Digunakan untuk memastikan model Machine Learning berhasil dimuat.
+
+### Request
+
+```http
+GET /health
+```
+
+### Response
+
+```json
+{
+  "status": "ok",
+  "model_loaded": true,
+  "model_version": "1.0.0"
+}
+```
+
+Keterangan:
+
+- **status** menunjukkan kondisi API.
+- **model_loaded** menunjukkan apakah model berhasil dimuat.
+- **model_version** merupakan versi model yang tersimpan pada `metadata.json`.
+
+---
+
+## POST /predict-harga
+
+Endpoint utama untuk melakukan prediksi harga kendaraan bekas.
+
+### Request
+
+```json
+{
+  "make": "Ford",
+  "model": "Fiesta",
+  "year": 2018,
+  "transmission": "Manual",
+  "fuel_type": "Petrol",
+  "mileage": 65000,
+  "tax": 145,
+  "mpg": 55.4,
+  "engine_size": 1.5
+}
+```
+
+### Contoh Response
+
+```json
+{
+  "estimasi_harga": 13980.25,
+  "mata_uang": "GBP",
+  "rentang_perkiraan": {
+    "minimum": 11563.24,
+    "maximum": 16397.26
+  },
+  "keyakinan": "tinggi",
+  "model_version": "1.0.0"
+}
+```
+
+---
+
+# Validasi Input
+
+API menggunakan **Pydantic** sehingga seluruh request akan divalidasi sebelum diproses oleh model Machine Learning.
+
+Validasi yang diterapkan antara lain:
+
+- Seluruh field wajib diisi.
+- Tidak diperbolehkan mengirim field di luar skema.
+- Nilai `year` harus berada pada rentang yang ditentukan.
+- Nilai `mileage`, `tax`, `mpg`, dan `engine_size` harus berada pada batas yang diperbolehkan.
+- `transmission` hanya menerima:
+  - Manual
+  - Automatic
+- `fuel_type` hanya menerima:
+  - Petrol
+  - Diesel
+  - Hybrid
+  - Electric
+
+Apabila request tidak sesuai dengan skema tersebut, API akan mengembalikan status **422 Unprocessable Entity**.
+
+---
+
+# Menjalankan Automated Testing
+
+Project menyediakan pengujian otomatis menggunakan **Pytest**.
+
+Install dependency testing.
+
+```bash
+python -m pip install -r requirements-dev.txt
+```
+
+Jalankan seluruh pengujian.
+
+```bash
+python -m pytest tests/ -v
+```
+
+Contoh hasil apabila seluruh pengujian berhasil dijalankan.
+
+```text
+============================= test session starts =============================
+
+collected 8 items
+
+tests/test_api.py::test_root_returns_service_info PASSED
+tests/test_api.py::test_health_returns_200_and_model_loaded PASSED
+tests/test_api.py::test_valid_prediction_returns_expected_schema PASSED
+tests/test_api.py::test_missing_required_field_returns_422 PASSED
+tests/test_api.py::test_unknown_enum_returns_422 PASSED
+tests/test_api.py::test_out_of_range_value_returns_422 PASSED
+tests/test_api.py::test_older_vehicle_is_predicted_cheaper PASSED
+tests/test_api.py::test_higher_mileage_is_not_predicted_more_expensive PASSED
+
+============================== 8 passed ==============================
+```
+
+---
+
+# Penjelasan Pengujian
+
+Project memiliki delapan buah unit test untuk memastikan setiap endpoint berjalan sesuai dengan yang diharapkan.
+
+| No | Nama Test | Fungsi |
+|----|-----------|--------|
+| 1 | `test_root_returns_service_info` | Memastikan endpoint root (`GET /`) dapat diakses dan menampilkan informasi layanan. |
+| 2 | `test_health_returns_200_and_model_loaded` | Memastikan model berhasil dimuat dan endpoint health berjalan dengan benar. |
+| 3 | `test_valid_prediction_returns_expected_schema` | Memastikan request yang valid menghasilkan prediksi dengan struktur response yang benar. |
+| 4 | `test_missing_required_field_returns_422` | Memastikan field wajib yang tidak dikirim menghasilkan HTTP 422. |
+| 5 | `test_unknown_enum_returns_422` | Memastikan nilai enum yang tidak valid ditolak oleh API. |
+| 6 | `test_out_of_range_value_returns_422` | Memastikan nilai numerik di luar batas menghasilkan HTTP 422. |
+| 7 | `test_older_vehicle_is_predicted_cheaper` | Memastikan kendaraan dengan tahun produksi lebih lama diprediksi memiliki harga lebih rendah dibanding kendaraan yang lebih baru dengan spesifikasi yang sama. |
+| 8 | `test_higher_mileage_is_not_predicted_more_expensive` | Memastikan kendaraan dengan mileage lebih tinggi tidak diprediksi memiliki harga lebih mahal dibanding kendaraan identik dengan mileage lebih rendah. |
+
+---
+
+# Alur Sistem
+
+```text
+Dataset
+   │
+   ▼
+load_data.py
+   │
+   ▼
+Exploratory Data Analysis (EDA)
+   │
+   ▼
+Training Model
+   │
+   ▼
+Random Forest Terbaik
+   │
+   ▼
+model.joblib
+   │
+   ▼
+FastAPI
+   │
+   ▼
+REST API
+   │
+   ▼
+Prediksi Harga Mobil Bekas
+```
+
+---
+
+# Teknologi yang Digunakan
+
+| Komponen | Teknologi |
+|----------|-----------|
+| Bahasa Pemrograman | Python 3.12+ |
+| Machine Learning | Scikit-Learn |
+| Data Processing | Pandas |
+| Komputasi Numerik | NumPy |
+| Visualisasi Data | Matplotlib |
+| Statistik | Seaborn |
+| Model Serialization | Joblib |
+| REST API | FastAPI |
+| Web Server | Uvicorn |
+| Validasi Data | Pydantic |
+| Automated Testing | Pytest |
+| Dataset Downloader | KaggleHub |
+
+---
+
+# Struktur API
+
+```
+GET   /                 → Informasi layanan API
+GET   /health           → Status model Machine Learning
+POST  /predict-harga    → Prediksi harga kendaraan bekas
+```
+
+Seluruh endpoint telah diuji menggunakan **Pytest** dan menghasilkan **8/8 pengujian berhasil (100% passed)** sehingga API siap digunakan sebagai layanan prediksi harga kendaraan bekas.
+
 # Catatan
 
 Model yang dihasilkan disimpan pada:
