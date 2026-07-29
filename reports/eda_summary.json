@@ -1,0 +1,23 @@
+{
+  "rows": 72435,
+  "columns": 11,
+  "duplicates": 842,
+  "missing_after_normalization": {
+    "model": 0,
+    "year": 0,
+    "price": 0,
+    "transmission": 0,
+    "mileage": 0,
+    "fuel_type": 0,
+    "tax": 0,
+    "mpg": 0,
+    "engine_size": 0,
+    "make": 0,
+    "brand": 0,
+    "vehicle_age": 0
+  },
+  "price_q1": 10175.0,
+  "price_q3": 20361.0,
+  "price_p99": 50714.60000000073,
+  "reference_year": 2021
+}

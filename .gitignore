@@ -1,0 +1,18 @@
+.venv-api/
+.venv/
+.venv-api-msys2-20260720-000242/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.idea/
+.vscode/
+.DS_Store
+
+data/*
+!data/.gitkeep
+models/*
+!models/.gitkeep
+!models/README.md
+
+# Log runtime lokal
+reports/predictions.log

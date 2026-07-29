@@ -1,0 +1,6 @@
+model,year,transmission,mileage,fuel_type,tax,mpg,engine_size,make,brand,actual_price,predicted_price,absolute_error
+ R8,2019,Automatic,1000,Petrol,145.0,32.8,5.2,audi,Cars_dataset,135000,84122.00749643912,50877.992503560876
+ 3 Series,2020,Semi-Auto,150,Diesel,150.0,47.1,3.0,BMW,Cars_dataset,71990,38005.42634513294,33984.57365486706
+ X5,2019,Automatic,5,Hybrid,135.0,188.3,3.0,BMW,Cars_dataset,73000,45718.616232001405,27281.383767998595
+ Mustang,2017,Manual,21575,Petrol,145.0,20.9,5.0,Ford,Cars_dataset,49999,27329.58693078014,22669.41306921986
+ Supra,2019,Automatic,9909,Other,150.0,34.5,3.0,toyota,Cars_dataset,59995,37744.62928893912,22250.37071106088
